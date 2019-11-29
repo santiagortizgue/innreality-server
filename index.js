@@ -55,6 +55,9 @@ io.on('connection', (socket) => {
     let usersListener = null;
 
     socket.on('USER: login', (data) => {
+
+        console.log("try to log in");
+
         auth.signInWithEmailAndPassword(data.email, data.pass)
             .then((result) => {
 
@@ -77,10 +80,10 @@ io.on('connection', (socket) => {
                                 let u = {
                                     name: snapshot.child("name").val(),
                                     uid: snapshot.child("uid").val(),
-                                    projects: pjs
+                                    projects: pjs,
+                                    pointer: snapshot.child("pointer").val(),
+                                    pointer_pos: snapshot.child("pointer_pos").val()
                                 }
-
-                                console.log(u);
 
                                 socket.emit("LOGIN: success", u);
                                 console.log("Login: " + u.name);
@@ -117,6 +120,35 @@ io.on('connection', (socket) => {
                 }).catch((e) => {
                     console.log("Error con la posición, " + e);
                 });
+        }
+    });
+
+    socket.on('USER: update pointer', (data) => {
+        if (user && project) {
+
+            let uid = user.uid;
+
+            let ref = db.ref("projects/" + project.id + "/users/" + uid + "/pointer_pos");
+            ref.set(data.pointer_pos)
+                .then(() => {
+                    return ref.once("value");
+                })
+                .then((snapshot) => {
+                    var d = snapshot.val();
+                }).catch((e) => {
+                    console.log("Error con la posición del puntero, " + e);
+            });
+
+            let ref2 = db.ref("projects/" + project.id + "/users/" + uid + "/pointer");
+            ref2.set(data.pointer)
+                .then(() => {
+                    return ref.once("value");
+                })
+                .then((snapshot) => {
+                    var d = snapshot.val();
+                }).catch((e) => {
+                    console.log("Error con el puntero, " + e);
+            });
         }
     });
 
