@@ -56,8 +56,6 @@ io.on('connection', (socket) => {
 
     socket.on('USER: login', (data) => {
 
-        console.log("try to log in");
-
         auth.signInWithEmailAndPassword(data.email, data.pass)
             .then((result) => {
 
