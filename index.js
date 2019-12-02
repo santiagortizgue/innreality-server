@@ -135,7 +135,7 @@ io.on('connection', (socket) => {
                     var d = snapshot.val();
                 }).catch((e) => {
                     console.log("Error con la posición del puntero, " + e);
-            });
+                });
 
             let ref2 = db.ref("projects/" + project.id + "/users/" + uid + "/pointer");
             ref2.set(data.pointer)
@@ -146,7 +146,7 @@ io.on('connection', (socket) => {
                     var d = snapshot.val();
                 }).catch((e) => {
                     console.log("Error con el puntero, " + e);
-            });
+                });
         }
     });
 
@@ -348,17 +348,31 @@ io.on('connection', (socket) => {
 
     socket.on('connect_error', () => {
         document.write("ERROR: Sorry, there seems to be an issue!");
-    })
+    });
 
     socket.on('connect_failed', () => {
         document.write("ERROR: Sorry, there seems to be an issue with the connection!");
-    })
+    });
 });
 
 function SetConnected(value, projectID, uid) {
     let r = db.ref("projects/" + projectID + "/users/" + uid + "/connected");
     r.set(value)
         .then(() => {
+
+            if (value == false) {
+                let r2 = db.ref("projects/" + projectID + "/users/" + uid + "/pointer");
+                r2.set(false)
+                    .then(() => {
+                        return r.once("value");
+                    })
+                    .then((dataSnapshot) => {
+                        var d = dataSnapshot.val();
+                    }).catch((e) => {
+                        console.log(e);
+                    });
+            }
+
             return r.once("value");
         })
         .then((snapshot) => {
